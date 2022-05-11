@@ -13,7 +13,7 @@ MCVersion = ""
 SoftwareVersion = ""
 SrvDir = ""
 
-scriptDir = __file__
+scriptDir = str(os.path.dirname(os.path.realpath(__file__)))
 
 def main():
     global Software
@@ -55,7 +55,7 @@ def PaperMC():
             MCVersion = input("Please, input your desired Minecraft version:\n")
             versions = requests.get("https://papermc.io/api/v2/projects/paper/versions/"+MCVersion).json()
             SoftwareVersion = versions["builds"][len(versions["builds"])-1]
-            print(SoftwareVersion)
+            print("Will be downloading build "+str(SoftwareVersion)+" of PaperMC.\n")
             if SoftwareVersion != 0:
                 break
             else:
@@ -77,6 +77,7 @@ def PaperMC():
             os.mkdir(SrvDir)
 
             os.chdir(SrvDir)
+            print(scriptDir)
             break
         else:
             print("Couldn't find the selected directory. Try again.")
@@ -106,7 +107,7 @@ def createScript():
         script = open(str(os.path.dirname(os.path.realpath(scriptDir)))+"/deps/startWindows.sh", 'r').read()
         extension = "bat"
     else:
-        script = open(str(os.path.dirname(os.path.realpath(scriptDir)))+"/deps/startUNIX.sh", 'r').read()
+        script = open(scriptDir+"/deps/startUNIX.sh", 'r').read()
         extension = "sh"
     
     while True:
