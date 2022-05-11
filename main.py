@@ -13,6 +13,8 @@ MCVersion = ""
 SoftwareVersion = ""
 SrvDir = ""
 
+scriptDir = __file__
+
 def main():
     global Software
     print("Welcome,")
@@ -101,10 +103,10 @@ def createScript():
     extension = ""
 
     if sys.platform == "win32" or sys.platform == "msys": #If it is a Windows-based OS.
-        script = open(str(os.path.dirname(os.path.realpath(__file__)))+"/deps/startWindows.sh", 'r').read()
+        script = open(str(os.path.dirname(os.path.realpath(scriptDir)))+"/deps/startWindows.sh", 'r').read()
         extension = "bat"
     else:
-        script = open(str(os.path.dirname(os.path.realpath(__file__)))+"/deps/startUNIX.sh", 'r').read()
+        script = open(str(os.path.dirname(os.path.realpath(scriptDir)))+"/deps/startUNIX.sh", 'r').read()
         extension = "sh"
     
     while True:
