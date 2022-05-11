@@ -77,7 +77,6 @@ def PaperMC():
             os.mkdir(SrvDir)
 
             os.chdir(SrvDir)
-            print(scriptDir)
             break
         else:
             print("Couldn't find the selected directory. Try again.")
