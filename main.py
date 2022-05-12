@@ -2,6 +2,7 @@ import shutil
 import subprocess
 import os
 import sys
+import tempfile
 
 import requests
 
@@ -91,7 +92,16 @@ def Run():
 
 
 def Spigot():
-    print("Spigot")
+    lastestBuildTools = requests.get("https://hub.spigotmc.org/jenkins/job/BuildTools/lastSuccessfulBuild/artifact/target/BuildTools.jar").content
+    file = open(tempfile.gettempdir+"/buildtools.jar")
+    file.write(lastestBuildTools)
+    file.close()
+
+    MCVersion = input("Please, input your desired Minecraft version:\n")
+
+    os.chdir(tempfile.gettempdir)
+    subprocess.run(args=["java", "-jar", "buildtools.jar", "--rev", MCVersion])
+    
 
 def Vanilla():
     print("Vanilla")
