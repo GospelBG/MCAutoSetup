@@ -144,10 +144,15 @@ def Setup():
     Run()
 
     while True:
+        EULAContent = ""
         EULA = input("You need to agree to the Minecraft EULA in order to run a server.\nDo you agree? (Y/N/Info)\nNOTE: You can take profit of this moment to modify your 'server.properties' file.\n").casefold()
         if EULA == "y":
-            file = open(SrvDir+"/eula.txt", "w+")
-            file.write(file.read().replace("false", "true"))
+            file = open(SrvDir+"/eula.txt", "r")
+            EULAContent = file.read()
+            file.close()
+
+            file = open(SrvDir+"/eula.txt", 'w')
+            file.write(EULAContent.replace("false", "true"))
             file.close()
 
             input("Setup has been successfuly made.\nYou can start your server by running the file named 'start.sh'/'start.bat'\n\nPress Enter to quit.\n")
