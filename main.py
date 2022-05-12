@@ -36,7 +36,7 @@ def main():
                 createScript()
                 break
             elif createStartScript == "n":
-                break
+                exit()
             else:
                 continue
         
@@ -79,7 +79,9 @@ def PaperMC():
             print("Couldn't find the selected directory. Try again.")
             continue
     
-    os.system("wget https://papermc.io/api/v2/projects/paper/versions/"+str(MCVersion)+"/builds/"+str(SoftwareVersion)+"/downloads/paper-"+str(MCVersion)+"-"+str(SoftwareVersion)+".jar -qO server.jar")
+    server = open(SrvDir+"/server.jar", 'wb')
+    server.write(requests.get("https://papermc.io/api/v2/projects/paper/versions/"+str(MCVersion)+"/builds/"+str(SoftwareVersion)+"/downloads/paper-"+str(MCVersion)+"-"+str(SoftwareVersion)+".jar").content)
+    server.close()
 
 def Run():
     if sys.platform == "win32" or sys.platform == "msys": #If it is a Windows-based OS.
@@ -100,7 +102,7 @@ def createScript():
     extension = ""
 
     if sys.platform == "win32" or sys.platform == "msys": #If it is a Windows-based OS.
-        script = open(str(os.path.dirname(os.path.realpath(scriptDir)))+"/deps/startWindows.sh", 'r').read()
+        script = open(scriptDir+"/deps/startWindows.bat", 'r').read()
         extension = "bat"
     else:
         script = open(scriptDir+"/deps/startUNIX.sh", 'r').read()
@@ -144,20 +146,20 @@ def Setup():
     while True:
         EULA = input("You need to agree to the Minecraft EULA in order to run a server.\nDo you agree? (Y/N/Info)\nNOTE: You can take profit of this moment to modify your 'server.properties' file.\n").casefold()
         if EULA == "y":
-            file = open(SrvDir+"/eula.txt", "a+")
+            file = open(SrvDir+"/eula.txt", "w+")
             file.write(file.read().replace("false", "true"))
             file.close()
 
-            Run() # Re-run file
+            input("Setup has been successfuly made.\nYou can start your server by running the file named 'start.sh'/'start.bat'\n\nPress Enter to quit.\n")
+            exit()
 
             break
-        
         elif EULA == "n":
             print("Aborting...")
             exit()
         
         elif EULA == "info":
-            print("You can read the eula file with your prefered text editor.\nThe file is located in:\n"+SrvDir+"/eula.txt")
+            print("\nYou can read the eula file with your prefered text editor.\nThe file is located in:\n"+SrvDir+"/eula.txt\n")
             continue
 
         else:
