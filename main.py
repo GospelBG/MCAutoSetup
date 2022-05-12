@@ -1,12 +1,9 @@
-from ast import arg
-from audioop import maxpp
 import shutil
 import subprocess
 import os
 import sys
 
 import requests
-import json
 
 Software = ""
 MCVersion = ""
