@@ -92,15 +92,18 @@ def Run():
 
 
 def Spigot():
-    lastestBuildTools = requests.get("https://hub.spigotmc.org/jenkins/job/BuildTools/lastSuccessfulBuild/artifact/target/BuildTools.jar").content
-    file = open(tempfile.gettempdir+"/buildtools.jar")
-    file.write(lastestBuildTools)
-    file.close()
+    buildTools = open(tempfile.gettempdir()+"/buildtools.jar", 'wb')
+    buildTools.write(requests.get("https://hub.spigotmc.org/jenkins/job/BuildTools/lastSuccessfulBuild/artifact/target/BuildTools.jar").content)
+    buildTools.close()
 
     MCVersion = input("Please, input your desired Minecraft version:\n")
 
-    os.chdir(tempfile.gettempdir)
-    subprocess.run(args=["java", "-jar", "buildtools.jar", "--rev", MCVersion])
+    os.chdir(tempfile.gettempdir())
+    try:
+        subprocess.run(args=["java", "-jar", "buildtools.jar", "--rev", MCVersion])
+    except subprocess.CalledProcessError as e:
+        print("Ended with return code "+e.returncode)
+        print(e.output)
     
 
 def Vanilla():
