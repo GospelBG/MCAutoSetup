@@ -92,18 +92,39 @@ def Run():
 
 
 def Spigot():
-    buildTools = open(tempfile.gettempdir()+"/buildtools.jar", 'wb')
+    tmpdir = tempfile.mkdtemp()
+    buildTools = open(tmpdir+"/buildtools.jar", 'wb')
     buildTools.write(requests.get("https://hub.spigotmc.org/jenkins/job/BuildTools/lastSuccessfulBuild/artifact/target/BuildTools.jar").content)
     buildTools.close()
 
     MCVersion = input("Please, input your desired Minecraft version:\n")
 
-    os.chdir(tempfile.gettempdir())
+    os.chdir(tmpdir)
+    print("Downloading and compiling Spigot.\nThis might take a while.\n")
     try:
         subprocess.run(args=["java", "-jar", "buildtools.jar", "--rev", MCVersion])
+        
     except subprocess.CalledProcessError as e:
         print("Ended with return code "+e.returncode)
         print(e.output)
+
+    while True:
+        global SrvDir
+        path = input("Please enter the path where you want your server to be in (all files in it will be deleted):\n")
+        
+        if os.path.exists(path) and os.path.isdir(path):
+            SrvDir = path
+            shutil.rmtree(SrvDir)
+            os.mkdir(SrvDir)
+            shutil.move(tmpdir+"/spigot-"+MCVersion+".jar", path)
+
+            os.chdir(SrvDir)
+
+            os.rename(SrvDir+"/spigot-"+MCVersion+".jar", "server.jar")
+            break
+        else:
+            print("Couldn't find the selected directory. Try again.")
+            continue
     
 
 def Vanilla():
@@ -158,7 +179,7 @@ def Setup():
 
     while True:
         EULAContent = ""
-        EULA = input("You need to agree to the Minecraft EULA in order to run a server.\nDo you agree? (Y/N/Info)\nNOTE: You can take profit of this moment to modify your 'server.properties' file.\n").casefold()
+        EULA = input("\n\nYou need to agree to the Minecraft EULA in order to run a server.\nDo you agree? (Y/N/Info)\nNOTE: You can take profit of this moment to modify your 'server.properties' file.\n").casefold()
         if EULA == "y":
             file = open(SrvDir+"/eula.txt", "r")
             EULAContent = file.read()
