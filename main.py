@@ -3,6 +3,7 @@ import subprocess
 import os
 import sys
 import tempfile
+from glob import glob
 
 import requests
 
@@ -107,6 +108,11 @@ def Spigot():
     except subprocess.CalledProcessError as e:
         print("Ended with return code "+e.returncode)
         print(e.output)
+
+    if not glob(tmpdir+"/*.jar").count == 2: # Chech if server.jar was generated. There should be 2 jars: BuildTools and the server itself.
+        print("\n\nERROR: Files weren't generated correctly.\nPlesase check console outputs above to troubleshot the error.")
+        input("\nPress Enter to exit...")
+        exit()
 
     while True:
         global SrvDir
