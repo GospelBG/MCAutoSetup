@@ -1,3 +1,5 @@
+import json
+import re
 import shutil
 import subprocess
 import os
@@ -134,7 +136,47 @@ def Spigot():
     
 
 def Vanilla():
-    print("Vanilla")
+    global MCVersion
+    MCVersion = input("Please, input your desired Minecraft version:\n")
+    versions = requests.get("https://launchermeta.mojang.com/mc/game/version_manifest.json").json()
+    versionJSON = ""
+    versionURL = ""
+    serverURL = ""
+    for i in range(len(versions['versions'])):
+        if (versions['versions'][i]['id'] == MCVersion):
+            versionURL = versions['versions'][i]['url']
+            break
+
+    if versionURL == "":
+        print("\n\nERROR: Server version '"+MCVersion+"' couldn't be found")
+        input("Press Enter to exit...")
+        exit()
+    
+    else:
+        versionJSON = requests.get(versionURL).json()
+        serverURL = versionJSON['downloads']['server']['url']
+    
+        while True:
+            global SrvDir
+            path = input("Please enter the path where you want your server to be in (all files in it will be deleted):\n")
+            
+            if os.path.exists(path) and os.path.isdir(path):
+                SrvDir = path
+                shutil.rmtree(SrvDir)
+                os.mkdir(SrvDir)
+
+                os.chdir(SrvDir)
+                break
+            else:
+                print("Couldn't find the selected directory. Try again.")
+                continue
+        
+        server = requests.get(serverURL).content
+
+        file = open('server.jar', 'wb')
+        file.write(server)
+        file.close()
+
 
 def createScript():
     script = ""
