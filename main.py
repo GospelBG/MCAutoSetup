@@ -5,9 +5,24 @@ import subprocess
 import os
 import sys
 import tempfile
+import argparse
 from glob import glob
-
 import requests
+
+
+parser = argparse.ArgumentParser()
+
+parser.add_argument('--nocolor', help="If you are having compatibility issues with the colored text to run the script without colored text.", action='store_true')
+
+args = parser.parse_args()
+if not args.nocolor:
+    from termcolor import colored
+
+def consoleOutput(content, color):
+    if args.nocolor:
+        print(content)
+    else:
+        print(colored(content, color))
 
 Software = ""
 MCVersion = ""
@@ -60,10 +75,10 @@ def PaperMC():
             if SoftwareVersion != 0:
                 break
             else:
-                print("There was an error finding the lastest PaperMC version.\nTry again later.\n")
+                consoleOutput("There was an error finding the lastest PaperMC version.\nTry again later.\n", 'red')
                 continue
         except subprocess.CalledProcessError as exc:
-            print("There was an error finding the lastest PaperMC version.\nTry again later.\n")
+            consoleOutput("There was an error finding the lastest PaperMC version.\nTry again later.\n", 'red')
             print(exc.cmd)
             print(exc.stderr)
             exit()
@@ -80,7 +95,7 @@ def PaperMC():
             os.chdir(SrvDir)
             break
         else:
-            print("Couldn't find the selected directory. Try again.")
+            consoleOutput("Couldn't find the selected directory. Try again.", 'red')
             continue
     
     server = open(SrvDir+"/server.jar", 'wb')
@@ -112,7 +127,7 @@ def Spigot():
         print(e.output)
 
     if not glob(tmpdir+"/*.jar").count == 2: # Chech if server.jar was generated. There should be 2 jars: BuildTools and the server itself.
-        print("\n\nERROR: Files weren't generated correctly.\nPlesase check console outputs above to troubleshot the error.")
+        consoleOutput("\n\nERROR: Files weren't generated correctly.\nPlesase check console outputs above to troubleshot the error.", 'red')
         input("\nPress Enter to exit...")
         exit()
 
@@ -131,7 +146,7 @@ def Spigot():
             os.rename(SrvDir+"/spigot-"+MCVersion+".jar", "server.jar")
             break
         else:
-            print("Couldn't find the selected directory. Try again.")
+            consoleOutput("Couldn't find the selected directory. Try again.", 'red')
             continue
     
 
@@ -148,7 +163,7 @@ def Vanilla():
             break
 
     if versionURL == "":
-        print("\n\nERROR: Server version '"+MCVersion+"' couldn't be found")
+        consoleOutput("\n\nERROR: Server version '"+MCVersion+"' couldn't be found", 'red')
         input("Press Enter to exit...")
         exit()
     
@@ -168,7 +183,7 @@ def Vanilla():
                 os.chdir(SrvDir)
                 break
             else:
-                print("Couldn't find the selected directory. Try again.")
+                consoleOutput("Couldn't find the selected directory. Try again.", 'red')
                 continue
         
         server = requests.get(serverURL).content
