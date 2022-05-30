@@ -4,7 +4,7 @@ import os
 import sys
 import tempfile
 import argparse
-from glob import glob
+from glob import glob1
 import requests
 
 
@@ -16,8 +16,11 @@ args = parser.parse_args()
 if not args.nocolor:
     from termcolor import colored
 
-def consoleOutput(content, color):
+def consoleOutput(content, color=""):
     if args.nocolor:
+        color = ""
+    
+    if color == "":
         print(content)
     else:
         print(colored(content, color))
@@ -31,9 +34,9 @@ scriptDir = str(os.path.dirname(os.path.realpath(__file__)))
 
 def main():
     global Software
-    print("Welcome,")
+    consoleOutput("Welcome,")
     while True:
-        Software = input("Select the desired server software:\nSpigot | PaperMC | Vanilla\n").casefold()
+        Software = input("Select the desired server software:\n\033[1mSpigot | PaperMC | Vanilla\033[0m\n").casefold()
         if Software == "spigot":
             Spigot()
 
@@ -44,11 +47,11 @@ def main():
             Vanilla()
             
         else:
-            print("\nTry again.")
+            consoleOutput("\nTry again.")
             continue
         
         while True:
-            createStartScript = input("Do you want to create a start script for your server now? (Y/N)\n").casefold()
+            createStartScript = input("Do you want to create a start script for your server now? \033[1m(Y/N)\033[0m\n").casefold()
             if createStartScript == "y":
                 createScript()
                 break
@@ -66,10 +69,10 @@ def PaperMC():
     global SoftwareVersion
     while True:
         try:
-            MCVersion = input("Please, input your desired Minecraft version:\n")
+            MCVersion = input("\033[1mPlease, input your desired Minecraft version\033[0m:\n")
             versions = requests.get("https://papermc.io/api/v2/projects/paper/versions/"+MCVersion).json()
             SoftwareVersion = versions["builds"][len(versions["builds"])-1]
-            print("Will be downloading build "+str(SoftwareVersion)+" of PaperMC.\n")
+            consoleOutput("Will be downloading build "+str(SoftwareVersion)+" of PaperMC.\n")
             if SoftwareVersion != 0:
                 break
             else:
@@ -77,23 +80,23 @@ def PaperMC():
                 continue
         except subprocess.CalledProcessError as exc:
             consoleOutput("There was an error finding the lastest PaperMC version.\nTry again later.\n", 'red')
-            print(exc.cmd)
-            print(exc.stderr)
+            consoleOutput(exc.cmd)
+            consoleOutput(exc.stderr)
             exit()
 
     while True:
         global SrvDir
-        path = input("Please enter the path where you want your server to be in (all files in it will be deleted):\n")
+        path = input("\033[1mPlease enter the path where you want your server to be in\033[0m"+" "+colored("(the directory will be created if it does not exist yet)", 'yellow')+":\n")
         
         if os.path.exists(path) and os.path.isdir(path):
             SrvDir = path
-            shutil.rmtree(SrvDir)
-            os.mkdir(SrvDir)
-
             os.chdir(SrvDir)
             break
         else:
-            consoleOutput("Couldn't find the selected directory. Try again.", 'red')
+            consoleOutput("Creating directory "+path+"...")
+            SrvDir = path
+            os.mkdir(SrvDir)
+            os.chdir(SrvDir)
             continue
     
     server = open(SrvDir+"/server.jar", 'wb')
@@ -113,44 +116,41 @@ def Spigot():
     buildTools.write(requests.get("https://hub.spigotmc.org/jenkins/job/BuildTools/lastSuccessfulBuild/artifact/target/BuildTools.jar").content)
     buildTools.close()
 
-    MCVersion = input("Please, input your desired Minecraft version:\n")
+    MCVersion = input("\033[1mPlease, input your desired Minecraft version:\033[0m\n")
 
     os.chdir(tmpdir)
-    print("Downloading and compiling Spigot.\nThis might take a while.\n")
+    consoleOutput("Downloading and compiling Spigot.\nThis might take a while.\n")
     try:
         subprocess.run(args=["java", "-jar", "buildtools.jar", "--rev", MCVersion])
         
     except subprocess.CalledProcessError as e:
-        print("Ended with return code "+e.returncode)
-        print(e.output)
+        consoleOutput("Ended with return code "+e.returncode)
+        consoleOutput(e.output)
 
-    if not glob(tmpdir+"/*.jar").count == 2: # Chech if server.jar was generated. There should be 2 jars: BuildTools and the server itself.
+    if not len(glob1(tmpdir, "*.jar")) == 2: # Check if server.jar was generated. There should be 2 jars: BuildTools and the server itself.
         consoleOutput("\n\nERROR: Files weren't generated correctly.\nPlesase check console outputs above to troubleshot the error.", 'red')
         input("\nPress Enter to exit...")
         exit()
 
     while True:
         global SrvDir
-        path = input("Please enter the path where you want your server to be in (all files in it will be deleted):\n")
+        path = input("\033[1mPlease enter the path where you want your server to be in\033[0m"+" "+colored("(the directory will be created if it does not exist yet)", 'yellow')+":\n")
         
         if os.path.exists(path) and os.path.isdir(path):
             SrvDir = path
-            shutil.rmtree(SrvDir)
-            os.mkdir(SrvDir)
-            shutil.move(tmpdir+"/spigot-"+MCVersion+".jar", path)
-
             os.chdir(SrvDir)
-
-            os.rename(SrvDir+"/spigot-"+MCVersion+".jar", "server.jar")
             break
         else:
-            consoleOutput("Couldn't find the selected directory. Try again.", 'red')
+            consoleOutput("Creating directory "+path+"...")
+            SrvDir = path
+            os.mkdir(SrvDir)
+            os.chdir(SrvDir)
             continue
-    
+
 
 def Vanilla():
     global MCVersion
-    MCVersion = input("Please, input your desired Minecraft version:\n")
+    MCVersion = input("\033[1mPlease, input your desired Minecraft version\033[0m:\n")
     versions = requests.get("https://launchermeta.mojang.com/mc/game/version_manifest.json").json()
     versionJSON = ""
     versionURL = ""
@@ -162,7 +162,7 @@ def Vanilla():
 
     if versionURL == "":
         consoleOutput("\n\nERROR: Server version '"+MCVersion+"' couldn't be found", 'red')
-        input("Press Enter to exit...")
+        input("\033[1mPress Enter to exit...\033[0m")
         exit()
     
     else:
@@ -171,17 +171,17 @@ def Vanilla():
     
         while True:
             global SrvDir
-            path = input("Please enter the path where you want your server to be in (all files in it will be deleted):\n")
+            path = input("\033[1mPlease enter the path where you want your server to be in\033[0m"+" "+colored("(the directory will be created if it does not exist yet)", 'yellow')+":\n")
             
             if os.path.exists(path) and os.path.isdir(path):
                 SrvDir = path
-                shutil.rmtree(SrvDir)
-                os.mkdir(SrvDir)
-
                 os.chdir(SrvDir)
                 break
             else:
-                consoleOutput("Couldn't find the selected directory. Try again.", 'red')
+                consoleOutput("Creating directory "+path+"...")
+                SrvDir = path
+                os.mkdir(SrvDir)
+                os.chdir(SrvDir)
                 continue
         
         server = requests.get(serverURL).content
@@ -204,25 +204,25 @@ def createScript():
         extension = "sh"
     
     while True:
-        initialRAM = input("Input the initial amount of RAM for the server (MB)\n")
+        initialRAM = input("Input the initial amount of RAM for the server \033[1m(MB)\033[0m\n")
         try:
             if int(initialRAM) > 0:
                 break
             else:
                 continue
         except ValueError:
-            print("Please, enter a valid number")
+            consoleOutput("Please, enter a valid number", 'yellow')
             continue
         
     while True:
-        maximumRAM = input("Input the maximum amount of RAM available for the server (MB)\n")
+        maximumRAM = input("Input the maximum amount of RAM available for the server \033[1m(MB)\033[0m\n")
         try:
             if int(maximumRAM) > 0:
                 break
             else:
                 continue
         except ValueError:
-            print("Please, enter a valid number")
+            consoleOutput("Please, enter a valid number", 'yellow')
             continue 
     
     args = "-Xms"+initialRAM+"m -Xmx"+maximumRAM+"m"
@@ -234,13 +234,13 @@ def createScript():
     file.close()
 
 def Setup():
-    print("Starting setup...")
+    consoleOutput("Starting setup...")
 
     Run()
 
     while True:
         EULAContent = ""
-        EULA = input("\n\nYou need to agree to the Minecraft EULA in order to run a server.\nDo you agree? (Y/N/Info)\nNOTE: You can take profit of this moment to modify your 'server.properties' file.\n").casefold()
+        EULA = input("\n\nYou need to agree to the Minecraft EULA in order to run a server.\nDo you agree? \033[1m(Y/N/Info)\033[0m\nNOTE: You can take profit of this moment to modify your 'server.properties' file.\n").casefold()
         if EULA == "y":
             file = open(SrvDir+"/eula.txt", "r")
             EULAContent = file.read()
@@ -250,16 +250,16 @@ def Setup():
             file.write(EULAContent.replace("false", "true"))
             file.close()
 
-            input("Setup has been successfuly made.\nYou can start your server by running the file named 'start.sh'/'start.bat'\n\nPress Enter to quit.\n")
+            input("Setup has been successfuly made.\nYou can start your server by running the file named 'start.sh'/'start.bat'\n\n\033[1mPress Enter to quit.\033[0m\n")
             exit()
 
             break
         elif EULA == "n":
-            print("Aborting...")
+            consoleOutput("Aborting...")
             exit()
         
         elif EULA == "info":
-            print("\nYou can read the eula file with your prefered text editor.\nThe file is located in:\n"+SrvDir+"/eula.txt\n")
+            consoleOutput("\nYou can read the eula file with your prefered text editor.\nThe file is located in:\n"+SrvDir+"/eula.txt\n")
             continue
 
         else:
